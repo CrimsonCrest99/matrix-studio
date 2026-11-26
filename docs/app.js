@@ -186,7 +186,10 @@ async function checkSpotifySong() {
     });
 
     setScene(frames, title);
-    await sendFrames({save: false, quiet: true});
+    for (let i = 0;i < frames.length;i += 8) {
+      state.frames = frames.slice(i,i + 8);
+      await sendFrames({save: false,quiet:true});
+    }
   } catch (error) {
     console.error('Spotify update failed:', error);
   }
