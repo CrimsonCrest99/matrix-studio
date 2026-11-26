@@ -176,17 +176,48 @@ async function checkSpotifySong() {
 
     lastSpotifySong = key;
 
-    const message = (title + ' - ' + artist).toUpperCase();
-    const width = message.length * 4 - 1;
+   // new code goes under here
 
-    const frames = Array.from({length: width + 17}, (_, i) => {
-      const frame = blank();
-      textOn(frame, message,16 - i,5, '#39edac');
-      return frame;
-    });
+const makeScroll = (message, y) => {
+  const text = message.toUpperCase();
+  const width = text.length * 4 - 1;
 
-    setScene(frames, title);
-  await sendFrames({save: false, quiet: true});
+  return Array.from({length: 8}, (_, i) => {
+    const frame = blank();
+    textOn(frame, text, Math.round(13 - i * (width + 16) / 7), y, '#39edac');
+    return frame;
+  });
+};
+
+const titleFrames = makeScroll(title, 5);
+
+const artistFrames = Array.from({length: 8}, (_, i) => {
+  const frame = blank();
+  textOn(frame, 'BY:', 6, 2, '#39edac');
+
+  const artistWidth = artist.length * 4 - 1;
+
+  textOn(
+    frame,
+    artist.toUpperCase(),
+    Math.round(13 - i * (artistWidth + 16) / 7),
+    9,
+    '#39edac'
+  );
+
+  return frame;
+});
+
+setScene(titleFrames, title);
+await sendFrames({save: false, quiet: true});
+
+if (title !== lastSpotifySong.split('|')[0]) return;
+
+await new Promise(resolve => setTimeout(resolve, 3000));
+
+setScene(artistFrames, 'BY: ' + artist);
+await sendFrames({save: false, quiet: true});
+    
   } catch (error) {
     console.error('Spotify update failed:', error);
   }
