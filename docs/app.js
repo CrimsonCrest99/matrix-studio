@@ -155,16 +155,130 @@ if(setupParams.has('zip')){setMode('clock');paintClock();refreshWeather();}
 if(!window.isSecureContext||!navigator.bluetooth)$('connectionHelp').textContent='Bluetooth requires a normal desktop Edge or Chrome tab. The editor works here; open this URL in your browser to connect.';
 window.addEventListener('pagehide',()=>{stopLive();state.device?.gatt?.disconnect();});
 
+
 // Spotify bridge
 const SPOTIFY_BRIDGE_URL = 'https://script.google.com/macros/s/AKfycby0P5wCIj-_mdj7e5UIH3sFVGtie4V3IkFIbk_EMnqIbuUdNR1ZpYcbHLXlDSqnzd1_TA/exec';
 
 let lastSpotifySong = '';
+let currentSpotifySong = null;
+let spotifyVersion = 0;
+let spotifySequenceRunning = false;
 
-async function checkSpotifySong() {
-  if (!connected() || state.busy) return;
+const spotifyWait = ms =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
+function makeSpotifyScroll(message, y) {
+  const text = message.toUpperCase();
+  const width = text.length * 4 - 1;
+
+  return Array.from({length: 8}, (_, i) => {
+    const frame = blank();
+    textOn(
+      frame,
+      text,
+      Math.round(13 - i * (width + 16) / 7),
+      y,
+      '#39edac'
+    );
+    return frame;
+  });
+}
+
+function makeSpotifyArtist(artist) {
+  const artistWidth = artist.length * 4 - 1;
+
+  return Array.from({length: 8}, (_, i) => {
+    const frame = blank();
+
+    textOn(frame, 'BY:', 6, 2, '#39edac');
+    textOn(
+      frame,
+      artist.toUpperCase(),
+      Math.round(13 - i * (artistWidth + 16) / 7),
+      9,
+      '#39edac'
+    );
+
+    return frame;
+  });
+}
+
+async function sendSpotifyScene(frames, title, version) {
+  while (connected() && state.busy) {
+    if (version !== spotifyVersion) return false;
+    await spotifyWait(250);
+  }
+
+  if (!connected() || version !== spotifyVersion) {
+    return false;
+  }
+
+  setScene(frames, title);
+  return await sendFrames({save: false, quiet: true});
+}
+
+async function runSpotifySequence() {
+  if (spotifySequenceRunning) return;
+
+  spotifySequenceRunning = true;
 
   try {
-    const response = await fetch(SPOTIFY_BRIDGE_URL + '?t=' + Date.now());
+    while (connected() && currentSpotifySong) {
+      const version = spotifyVersion;
+      const song = currentSpotifySong;
+
+      const titleFrames = makeSpotifyScroll(song.title, 5);
+      const artistFrames = makeSpotifyArtist(song.artist);
+
+      const titleSent = await sendSpotifyScene(
+        titleFrames,
+        song.title,
+        version
+      );
+
+      if (!titleSent) {
+        if (version !== spotifyVersion) continue;
+        await spotifyWait(1000);
+        continue;
+      }
+
+      await spotifyWait(3000);
+
+      if (version !== spotifyVersion) continue;
+
+      const artistSent = await sendSpotifyScene(
+        artistFrames,
+        'BY: ' + song.artist,
+        version
+      );
+
+      if (!artistSent) {
+        if (version !== spotifyVersion) continue;
+        await spotifyWait(1000);
+        continue;
+      }
+
+      await spotifyWait(3000);
+    }
+  } catch (error) {
+    console.error('Spotify display sequence failed:', error);
+  } finally {
+    spotifySequenceRunning = false;
+
+    if (connected() && currentSpotifySong) {
+      runSpotifySequence();
+    }
+  }
+}
+
+async function checkSpotifySong() {
+  if (!connected()) return;
+
+  try {
+    const response = await fetch(
+      SPOTIFY_BRIDGE_URL + '?t=' + Date.now()
+    );
+
     if (!response.ok) return;
 
     const song = await response.json();
@@ -175,52 +289,19 @@ async function checkSpotifySong() {
     if (!title || key === lastSpotifySong) return;
 
     lastSpotifySong = key;
+    currentSpotifySong = {title, artist};
+    spotifyVersion++;
 
-   // new code goes under here
+    if (!spotifySequenceRunning) {
+      runSpotifySequence();
+    }
 
-const makeScroll = (message, y) => {
-  const text = message.toUpperCase();
-  const width = text.length * 4 - 1;
-
-  return Array.from({length: 8}, (_, i) => {
-    const frame = blank();
-    textOn(frame, text, Math.round(13 - i * (width + 16) / 7), y, '#39edac');
-    return frame;
-  });
-};
-
-const titleFrames = makeScroll(title, 5);
-
-const artistFrames = Array.from({length: 8}, (_, i) => {
-  const frame = blank();
-  textOn(frame, 'BY:', 6, 2, '#39edac');
-
-  const artistWidth = artist.length * 4 - 1;
-
-  textOn(
-    frame,
-    artist.toUpperCase(),
-    Math.round(13 - i * (artistWidth + 16) / 7),
-    9,
-    '#39edac'
-  );
-
-  return frame;
-});
-
-setScene(titleFrames, title);
-await sendFrames({save: false, quiet: true});
-
-if (title !== lastSpotifySong.split('|')[0]) return;
-
-await new Promise(resolve => setTimeout(resolve, 3000));
-
-setScene(artistFrames, 'BY: ' + artist);
-await sendFrames({save: false, quiet: true});
-    
   } catch (error) {
     console.error('Spotify update failed:', error);
   }
 }
 
 setInterval(checkSpotifySong, 5000);
+checkSpotifySong();
+
+
