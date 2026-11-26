@@ -196,7 +196,8 @@ async function makeSpotifyArtwork(url) {
   .join('');
     }
 
-    return frame;
+    console.log('Artwork pixel check:', frame.length, frame.filter(c => /^#[0-9a-f]{6}$/i.test(c)).length, frame.slice(0, 5));
+return frame;
   } catch (error) {
     console.error('Spotify artwork conversion failed:', error);
     return null;
