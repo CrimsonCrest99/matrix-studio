@@ -309,6 +309,8 @@ async function runSpotifySequence() {
         version
       );
 
+      console.log('Artist scene sent:', artistSent, 'Song:', song.title);
+
       if (!artistSent) {
         if (version !== spotifyVersion) continue;
         await spotifyWait(1000);
