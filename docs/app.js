@@ -179,9 +179,9 @@ async function checkSpotifySong() {
     const message = (title + ' - ' + artist).toUpperCase();
     const width = message.length * 4 - 1;
 
-    const frames = Array.from({length: 8}, (_, i) => {
+    const frames = Array.from({length: width + 17}, (_, i) => {
       const frame = blank();
-      textOn(frame, message, Math.round(13 - i * (width + 10) / 7), 5, '#39edac');
+      textOn(frame, message,16 - i,5, '#39edac');
       return frame;
     });
 
