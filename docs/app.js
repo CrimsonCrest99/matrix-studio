@@ -361,7 +361,7 @@ async function checkSpotifySong() {
   }
 }
 
-setInterval(checkSpotifySong, 5000);
-checkSpotifySong();
+// setInterval(checkSpotifySong, 5000);
+// checkSpotifySong();
 
 
