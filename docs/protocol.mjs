@@ -38,6 +38,6 @@ export async function transmit(frames, write, {gamma = 0.6, save = false, pause 
     }
   }
   if (save) await send([0x00, 0x11, 0xf2]);
-  if (images.length > 1) await send([0x00, 0x12]);
+  // temp disabled (if (images.length > 1) await send([0x00, 0x12]);)
   return packets;
 }
