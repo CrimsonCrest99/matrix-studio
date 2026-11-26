@@ -263,7 +263,9 @@ async function runSpotifySequence() {
 
       const titleFrames = makeSpotifyScroll(song.title, 5);
       const artistFrames = makeSpotifyArtist(song.artist);
+      const artworkFrame = await makeSpotifyArtwork(song.coverUrl);
 
+      
       const titleSent = await sendSpotifyScene(
         titleFrames,
         song.title,
@@ -276,6 +278,24 @@ async function runSpotifySequence() {
         continue;
       }
 
+      if (artworkFrame) {
+  const artworkSent = await sendSpotifyScene(
+    [artworkFrame],
+    'Album artwork',
+    version
+  );
+
+  if (!artworkSent) {
+    if (version !== spotifyVersion) continue;
+    await spotifyWait(1000);
+    continue;
+  }
+
+  await spotifyWait(9000);
+
+  if (version !== spotifyVersion) continue;
+}
+      
       await spotifyWait(3000);
 
       if (version !== spotifyVersion) continue;
@@ -324,7 +344,7 @@ async function checkSpotifySong() {
     if (!title || key === lastSpotifySong) return;
 
     lastSpotifySong = key;
-    currentSpotifySong = {title, artist};
+    currentSpotifySong = {title, artist, coverUrl};
     spotifyVersion++;
 
     if (!spotifySequenceRunning) {
