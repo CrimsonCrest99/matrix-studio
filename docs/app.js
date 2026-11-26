@@ -154,3 +154,42 @@ $('gamma').value=state.gamma;$('gammaValue').textContent=state.gamma.toFixed(2);
 if(setupParams.has('zip')){setMode('clock');paintClock();refreshWeather();}
 if(!window.isSecureContext||!navigator.bluetooth)$('connectionHelp').textContent='Bluetooth requires a normal desktop Edge or Chrome tab. The editor works here; open this URL in your browser to connect.';
 window.addEventListener('pagehide',()=>{stopLive();state.device?.gatt?.disconnect();});
+
+// Spotify bridge
+const SPOTIFY_BRIDGE_URL = 'https://script.google.com/macros/s/AKfycby0P5wCIj-_mdj7e5UIH3sFVGtie4V3IkFIbk_EMnqIbuUdNR1ZpYcbHLXlDSqnzd1_TA/exec';
+
+let lastSpotifySong = '';
+
+async function checkSpotifySong() {
+  if (!connected() || state.busy) return;
+
+  try {
+    const response = await fetch(SPOTIFY_BRIDGE_URL + '?t=' + Date.now());
+    if (!response.ok) return;
+
+    const song = await response.json();
+    const title = (song.title || '').trim();
+    const artist = (song.artist || '').trim();
+    const key = title + '|' + artist;
+
+    if (!title || key === lastSpotifySong) return;
+
+    lastSpotifySong = key;
+
+    const message = (title + ' - ' + artist).toUpperCase().slice(0, 24);
+    const width = message.length * 4 - 1;
+
+    const frames = Array.from({length: 8}, (_, i) => {
+      const frame = blank();
+      textOn(frame, message, Math.round(13 - i * (width + 10) / 7), 5, '#39edac');
+      return frame;
+    });
+
+    setScene(frames, title);
+    await sendFrames({save: false, quiet: true});
+  } catch (error) {
+    console.error('Spotify update failed:', error);
+  }
+}
+
+setInterval(checkSpotifySong, 5000);
