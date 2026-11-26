@@ -284,6 +284,7 @@ async function checkSpotifySong() {
     const song = await response.json();
     const title = (song.title || '').trim();
     const artist = (song.artist || '').trim();
+    const coverUrl = song.coverUrl || '';
     const key = title + '|' + artist;
 
     if (!title || key === lastSpotifySong) return;
