@@ -191,7 +191,9 @@ async function makeSpotifyArtwork(url) {
     const frame = blank();
 
     for (let i = 0; i < 256; i++) {
-      frame[i] = `rgb(${pixels[i * 4]},${pixels[i * 4 + 1]},${pixels[i * 4 + 2]})`;
+      frame[i] = '#' + [0, 1, 2]
+  .map(channel => pixels[i * 4 + channel].toString(16).padStart(2, '0'))
+  .join('');
     }
 
     return frame;
