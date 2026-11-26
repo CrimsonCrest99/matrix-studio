@@ -176,7 +176,7 @@ async function checkSpotifySong() {
 
     lastSpotifySong = key;
 
-    const message = (title + ' - ' + artist).toUpperCase().slice(0, 24);
+    const message = (title + ' - ' + artist).toUpperCase();
     const width = message.length * 4 - 1;
 
     const frames = Array.from({length: 8}, (_, i) => {
