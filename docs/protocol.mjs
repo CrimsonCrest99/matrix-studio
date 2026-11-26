@@ -27,7 +27,7 @@ export async function transmit(frames, write, {gamma = 0.6, save = false, pause 
     await send([0x0f, 0xf2, 0x08]);
   } else {
     // The firmware expects all eight animation slots, even for a shorter sequence.
-    await send([0x00, 0x12], 500);
+    // diabled for testing (await send([0x00, 0x12], 500);)
     for (let index = 1; index <= 8; index++) {
       const image = images[(index - 1) % images.length];
       await send([0x02, 0xf1, 8], 5);
