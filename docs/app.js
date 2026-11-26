@@ -167,6 +167,40 @@ let spotifySequenceRunning = false;
 const spotifyWait = ms =>
   new Promise(resolve => setTimeout(resolve, ms));
 
+async function makeSpotifyArtwork(url) {
+  if (!url) return null;
+
+  try {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = url;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0, 16, 16);
+
+    const pixels = ctx.getImageData(0, 0, 16, 16).data;
+    const frame = blank();
+
+    for (let i = 0; i < 256; i++) {
+      frame[i] = `rgb(${pixels[i * 4]},${pixels[i * 4 + 1]},${pixels[i * 4 + 2]})`;
+    }
+
+    return frame;
+  } catch (error) {
+    console.error('Spotify artwork conversion failed:', error);
+    return null;
+  }
+}
+
 function makeSpotifyScroll(message, y) {
   const text = message.toUpperCase();
   const width = text.length * 4 - 1;
