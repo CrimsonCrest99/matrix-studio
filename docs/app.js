@@ -299,7 +299,7 @@ async function runSpotifySequence() {
   if (version !== spotifyVersion) continue;
 }
       
-      await spotifyWait(3000);
+      await spotifyWait(4500);
 
       if (version !== spotifyVersion) continue;
 console.log('ABOUT TO SEND ARTIST:', song.artist);
@@ -317,7 +317,7 @@ console.log('ABOUT TO SEND ARTIST:', song.artist);
         continue;
       }
 
-      await spotifyWait(3000);
+      await spotifyWait(4500);
     }
   } catch (error) {
     console.error('Spotify display sequence failed:', error);
