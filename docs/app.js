@@ -204,19 +204,22 @@ return frame;
   }
 }
 
+
 function makeSpotifyScroll(message, y) {
   const text = message.toUpperCase();
   const width = text.length * 4 - 1;
 
   return Array.from({length: 8}, (_, i) => {
     const frame = blank();
+
     textOn(
       frame,
       text,
-      Math.round(13 - i * (width + 16) / 7),
+      Math.round(13 - i * (width + 12) / 7),
       y,
-      '#39edac'
+      '#FF3030'
     );
+
     return frame;
   });
 }
@@ -227,13 +230,14 @@ function makeSpotifyArtist(artist) {
   return Array.from({length: 8}, (_, i) => {
     const frame = blank();
 
-    textOn(frame, 'BY:', 6, 2, '#39edac');
+    textOn(frame, 'BY:', 6, 2, '#FF3030');
+
     textOn(
       frame,
       artist.toUpperCase(),
-      Math.round(13 - i * (artistWidth + 16) / 7),
+      Math.round(13 - i * (artistWidth + 12) / 7),
       9,
-      '#39edac'
+      '#FF3030'
     );
 
     return frame;
