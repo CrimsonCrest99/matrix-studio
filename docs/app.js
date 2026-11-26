@@ -302,7 +302,7 @@ async function runSpotifySequence() {
       await spotifyWait(3000);
 
       if (version !== spotifyVersion) continue;
-
+console.log('ABOUT TO SEND ARTIST:', song.artist);
       const artistSent = await sendSpotifyScene(
         artistFrames,
         'BY: ' + song.artist,
